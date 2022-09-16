@@ -1,6 +1,6 @@
 # Supreme Products Scraper
 
-Web scraper that scrapes all products and their price, description and more from supremenewyork.com (Supreme New York) into an Excel and CSV file.
+Web scraper that scrapes all products and their price, description and more from supremenewyork.com (Supreme New York) into an Excel (one file with one sheet with all products and a second file with all products seperated by categories into multiple sheets) and CSV file.
 
 ## Requirements
 
@@ -27,4 +27,4 @@ $ python3 supreme-no-proxy.py
 
 ## License
 
-This project is licensed under the GPL 3.0 License - see the [LICENSE](LICENSE) file for details
+This project is licensed under the GPL 3.0 License - see the [LICENSE](LICENSE) file for details.

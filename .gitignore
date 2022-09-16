@@ -3,3 +3,5 @@ Supreme*.xlsx
 Supreme*.csv
 product.json
 mobile_stock.json
+data/*
+!data/.gitkeep

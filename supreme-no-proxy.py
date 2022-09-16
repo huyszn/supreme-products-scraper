@@ -6,8 +6,8 @@ import pandas as pd
 def category_dict(category_items):
     c_name = [category_items[item]['name'] for item in range(len(category_items))]
     c_id = [int(category_items[item]['id']) for item in range(len(category_items))]
-    c_image_url = [category_items[item]['image_url'] for item in range(len(category_items))]
-    c_image_url_hi = [category_items[item]['image_url_hi'] for item in range(len(category_items))]
+    c_image_url = [category_items[item]['image_url'].replace("//", "") for item in range(len(category_items))]
+    c_image_url_hi = [category_items[item]['image_url_hi'].replace("//", "") for item in range(len(category_items))]
     c_price = [float(f"{category_items[item]['price']/ 100.:.2f}") for item in range(len(category_items))]
     c_sale_price = [float(f"{category_items[item]['sale_price']/ 100.:.2f}") for item in range(len(category_items))]
     # euros

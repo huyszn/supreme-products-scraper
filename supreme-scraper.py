@@ -69,11 +69,11 @@ def main():
     else:
         r = requests.get("https://www.supremenewyork.com/mobile_stock.json", headers=headers, proxies=proxy)
     json_r = r.json()
-    with open('mobile_stock.json', 'w') as f:
+    with open('./stock/mobile_stock.json', 'w') as f:
         json.dump(json_r, f)
 
     #### LOAD DOWNLOADED JSON
-    #r = open('mobile_stock_jp.json')
+    #r = open('.stock/mobile_stock_jp.json')
     #json_r = json.load(r)
 
     release_date = datetime.strptime(json_r["release_date"], "%m/%d/%Y").strftime('%B %d %Y')

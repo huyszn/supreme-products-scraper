@@ -1,6 +1,6 @@
 # Supreme Products Scraper
 
-Web scraper that scrapes all products and their price, description, color, and more from supremenewyork.com (Supreme New York). It then exports the extracted product information into two Excel files: one file with one sheet with all products, a second file with all products separated by categories into multiple sheets, and one CSV file containing all products.
+Web scraper that scrapes all products and their price, description, colors, sizes, and more from supremenewyork.com (Supreme New York). It then exports the extracted product information into two Excel files: one file with one sheet with all products, a second file with all products separated by categories into multiple sheets, and one CSV file containing all products.
 
 ## Requirements
 
@@ -29,7 +29,7 @@ NO_PROXY = True
 
 ## Things to work on
 
-- Add sizes and stock level to the Excel/CSV files
+- Add stock level to the Excel/CSV files
 
 ## License
 

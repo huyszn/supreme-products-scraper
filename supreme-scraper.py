@@ -30,30 +30,41 @@ def category_dict(category_items):
     c_category_name = [category_items[item]['category_name'] for item in range(len(category_items))]
     c_description = []
     c_colors = []
+    c_sizes = []
     product_colors = []
-    # to do: get both size, and stock level from the below for loop like with description and color
+    product_sizes = []
+    # to do: get stock level from the below for loop like with description, color, and size
     for item in c_id:
-        product_json = requests.get(f"https://www.supremenewyork.com/shop/{item}.json", headers=headers, proxies=proxy).json()
+        if NO_PROXY:
+            product_json = requests.get(f"https://www.supremenewyork.com/shop/{item}.json", headers=headers).json()
+        else:
+            product_json = requests.get(f"https://www.supremenewyork.com/shop/{item}.json", headers=headers, proxies=proxy).json()
+        # get description for one product
         c_description.append(product_json['description'])
         # get all colors for one product
         for i in range(len(product_json['styles'])):
             product_colors.append(product_json['styles'][i]['name'])
         c_colors.append(product_colors)
-        # clear list for next product
+        # get all sizes for one product
+        for i in range(len(product_json['styles'][0]['sizes'])):
+            product_sizes.append(product_json['styles'][0]['sizes'][i]['name'])
+        c_sizes.append(product_sizes)
+        # clear lists for next product
         product_colors = []
+        product_sizes = []
 
     # EU
     if 'price_euro' in category_items[0]:
-        category_results = {'Name': c_name, 'ID': c_id, 'Image URL': c_image_url, 'Image URL Hi': c_image_url_hi, 'Price': c_price, 'Sale Price': c_sale_price, 'Euro Price': c_price_euro, 'Euro Sale Price': c_sale_price_euro, 'New Item': c_new_item, 'Position': c_position, 'Category Name': c_category_name, 'Description': c_description, 'Colors': c_colors}
+        category_results = {'Name': c_name, 'ID': c_id, 'Image URL': c_image_url, 'Image URL Hi': c_image_url_hi, 'Price': c_price, 'Sale Price': c_sale_price, 'Euro Price': c_price_euro, 'Euro Sale Price': c_sale_price_euro, 'New Item': c_new_item, 'Position': c_position, 'Category Name': c_category_name, 'Description': c_description, 'Colors': c_colors, 'Sizes': c_sizes}
     # NA / JP
     else:
-        category_results = {'Name': c_name, 'ID': c_id, 'Image URL': c_image_url, 'Image URL Hi': c_image_url_hi, 'Price': c_price, 'Sale Price': c_sale_price, 'New Item': c_new_item, 'Position': c_position, 'Category Name': c_category_name, 'Description': c_description, 'Colors': c_colors}
+        category_results = {'Name': c_name, 'ID': c_id, 'Image URL': c_image_url, 'Image URL Hi': c_image_url_hi, 'Price': c_price, 'Sale Price': c_sale_price, 'New Item': c_new_item, 'Position': c_position, 'Category Name': c_category_name, 'Description': c_description, 'Colors': c_colors, 'Sizes': c_sizes}
     
     return category_results
 
-# NO_PROXY = False: Use proxy for scraping
-# NO_PROXY = True: Do not use proxy for scraping
-NO_PROXY = False
+# NO_PROXY = False: Use free proxy for scraping
+# NO_PROXY = True: Do not use free proxy for scraping
+NO_PROXY = True
 
 proxy = {'https': (FreeProxy(country_id=['US', 'CA', 'MX'], rand=True)).get()}
 #print(proxy)
@@ -73,9 +84,10 @@ def main():
         json.dump(json_r, f)
 
     #### LOAD DOWNLOADED JSON
-    #r = open('.stock/mobile_stock_jp.json')
+    #r = open('./stock/mobile_stock_jp.json')
     #json_r = json.load(r)
 
+    # create title for Excel and CSV files
     release_date = datetime.strptime(json_r["release_date"], "%m/%d/%Y").strftime('%B %d %Y')
     week_num = json_r["release_week"].split("F")[0]
     season = json_r["release_week"][1:]
@@ -108,17 +120,18 @@ def main():
         if c:
             # EU
             if 'Euro Price' in c:
-                category_df[f"{category_name}_df"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'Euro Price': c['Euro Price'], 'Euro Sale Price': c['Euro Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors']})
+                category_df[f"{category_name}_df"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'Euro Price': c['Euro Price'], 'Euro Sale Price': c['Euro Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes']})
             # NA / JP
             else:
-                category_df[f"{category_name}_df"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors']})
+                category_df[f"{category_name}_df"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes']})
 
     # Excel file with separate sheets for each category
     writer = pd.ExcelWriter(f'./data/{title} - Sheets.xlsx', engine='xlsxwriter', engine_kwargs={'options': {'strings_to_numbers': True}})
 
     for category_name, df in category_df.items():
-        # remove brackets from colors
+        # remove brackets from colors and sizes
         df['Colors'] = df['Colors'].str.join(',')
+        df['Sizes'] = df['Sizes'].str.join(',')
         df.to_excel(writer, sheet_name=category_name, index=False)
 
     writer.save() 

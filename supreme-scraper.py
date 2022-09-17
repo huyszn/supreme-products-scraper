@@ -3,31 +3,31 @@ from datetime import datetime
 import pandas as pd
 from fp.fp import FreeProxy
 
-def category_dict(category_items):
+def category_dict(category_products_list_dict):
     """
     Parse products in a category to a dictionary
 
     Parameters
     ----------
-    @results_items [list]: List of products in a category
+    @category_products_list_dict [list]: List of products in a dictionary based on their category
 
     Returns
     -------
     [dictionary] all products and their attributes for a category
     """
-    c_name = [category_items[item]['name'] for item in range(len(category_items))]
-    c_id = [int(category_items[item]['id']) for item in range(len(category_items))]
-    c_image_url = [category_items[item]['image_url'].replace("//", "") for item in range(len(category_items))]
-    c_image_url_hi = [category_items[item]['image_url_hi'].replace("//", "") for item in range(len(category_items))]
-    c_price = [f"{float(category_items[item]['price']/ 100.):.2f}" for item in range(len(category_items))]
-    c_sale_price = [f"{float(category_items[item]['sale_price']/ 100.):.2f}" for item in range(len(category_items))]
+    c_name = [category_products_list_dict[item]['name'] for item in range(len(category_products_list_dict))]
+    c_id = [int(category_products_list_dict[item]['id']) for item in range(len(category_products_list_dict))]
+    c_image_url = [category_products_list_dict[item]['image_url'].replace("//", "") for item in range(len(category_products_list_dict))]
+    c_image_url_hi = [category_products_list_dict[item]['image_url_hi'].replace("//", "") for item in range(len(category_products_list_dict))]
+    c_price = [f"{float(category_products_list_dict[item]['price']/ 100.):.2f}" for item in range(len(category_products_list_dict))]
+    c_sale_price = [f"{float(category_products_list_dict[item]['sale_price']/ 100.):.2f}" for item in range(len(category_products_list_dict))]
     # euros
-    if 'price_euro' in category_items[0]:
-        c_price_euro = [f"{float(category_items[item]['price_euro']/ 100.):.2f}" for item in range(len(category_items))]
-        c_sale_price_euro = [f"{float(category_items[item]['sale_price_euro']/ 100.):.2f}" for item in range(len(category_items))]
-    c_new_item = [category_items[item]['new_item'] for item in range(len(category_items))]
-    c_position = [int(category_items[item]['position']) for item in range(len(category_items))]
-    c_category_name = [category_items[item]['category_name'] for item in range(len(category_items))]
+    if 'price_euro' in category_products_list_dict[0]:
+        c_price_euro = [f"{float(category_products_list_dict[item]['price_euro']/ 100.):.2f}" for item in range(len(category_products_list_dict))]
+        c_sale_price_euro = [f"{float(category_products_list_dict[item]['sale_price_euro']/ 100.):.2f}" for item in range(len(category_products_list_dict))]
+    c_new_item = [category_products_list_dict[item]['new_item'] for item in range(len(category_products_list_dict))]
+    c_position = [int(category_products_list_dict[item]['position']) for item in range(len(category_products_list_dict))]
+    c_category_name = [category_products_list_dict[item]['category_name'] for item in range(len(category_products_list_dict))]
     c_description = []
     c_colors = []
     c_sizes = []
@@ -54,7 +54,7 @@ def category_dict(category_items):
         product_sizes = []
 
     # EU
-    if 'price_euro' in category_items[0]:
+    if 'price_euro' in category_products_list_dict[0]:
         category_results = {'Name': c_name, 'ID': c_id, 'Image URL': c_image_url, 'Image URL Hi': c_image_url_hi, 'Price': c_price, 'Sale Price': c_sale_price, 'Euro Price': c_price_euro, 'Euro Sale Price': c_sale_price_euro, 'New Item': c_new_item, 'Position': c_position, 'Category Name': c_category_name, 'Description': c_description, 'Colors': c_colors, 'Sizes': c_sizes}
     # NA / JP
     else:
@@ -64,7 +64,7 @@ def category_dict(category_items):
 
 # NO_PROXY = False: Use free proxy for scraping
 # NO_PROXY = True: Do not use free proxy for scraping
-NO_PROXY = True
+NO_PROXY = False
 
 proxy = {'https': (FreeProxy(country_id=['US', 'CA', 'MX'], rand=True)).get()}
 #print(proxy)
@@ -95,6 +95,7 @@ def main():
     title = f"Supreme Products for the Week of {release_date} ({release_week})"
 
     categories = json_r['products_and_categories']
+    # parse all products in a category to a dictionary
     Bags = category_dict(categories['Bags']) if 'Bags' in categories else []
     Skate = category_dict(categories['Skate']) if 'Skate' in categories else []
     Shirts = category_dict(categories['Shirts']) if 'Shirts' in categories else []
@@ -110,7 +111,8 @@ def main():
 
     category_list = [Bags, Skate, Shirts, Pants, Shorts, Tops_Sweaters, T_Shirts, Jackets, Sweatshirts, Hats, Accessories, Shoes]
 
-    category_df = {}
+    # convert list of category dictionaries to dictionary of multiple dataframes of products based on their category
+    category_dfs = {}
     for c in category_list:
         # get names of variables from category_list as strings
         c_list = [key for key, value in locals().items() if value == c]
@@ -120,15 +122,15 @@ def main():
         if c:
             # EU
             if 'Euro Price' in c:
-                category_df[f"{category_name}_df"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'Euro Price': c['Euro Price'], 'Euro Sale Price': c['Euro Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes']})
+                category_dfs[f"{category_name}_df"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'Euro Price': c['Euro Price'], 'Euro Sale Price': c['Euro Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes']})
             # NA / JP
             else:
-                category_df[f"{category_name}_df"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes']})
+                category_dfs[f"{category_name}_df"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes']})
 
     # Excel file with separate sheets for each category
     writer = pd.ExcelWriter(f'./data/{title} - Sheets.xlsx', engine='xlsxwriter', engine_kwargs={'options': {'strings_to_numbers': True}})
 
-    for category_name, df in category_df.items():
+    for category_name, df in category_dfs.items():
         # remove brackets from colors and sizes
         df['Colors'] = df['Colors'].str.join(',')
         df['Sizes'] = df['Sizes'].str.join(',')
@@ -137,17 +139,17 @@ def main():
     writer.save() 
 
     # get all products in each category into one list
-    one_list = [v for k,v in category_df.items()] 
+    one_products_list = [v for k,v in category_dfs.items()] 
     # concatenate all products by row into one dataframe
-    one_df = pd.concat(one_list ,axis=0)
+    one_products_df = pd.concat(one_products_list ,axis=0)
 
     # Excel file with all products on one sheet
     writer = pd.ExcelWriter(f'./data/{title} - One Sheet.xlsx', engine='xlsxwriter', engine_kwargs={'options': {'strings_to_numbers': True}})
-    one_df.to_excel(writer, sheet_name='Products', index=False)
+    one_products_df.to_excel(writer, sheet_name='Products', index=False)
     writer.save() 
 
     # CSV file with all products
-    one_df.to_csv(f'./data/{title} - CSV.csv', index=False)
+    one_products_df.to_csv(f'./data/{title} - CSV.csv', index=False)
 
 if __name__ == '__main__':
     main()

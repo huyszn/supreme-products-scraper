@@ -16,12 +16,12 @@ $ python3 supreme-scraper.py
 
 ### To change proxy settings, edit the `NO_PROXY` variable's value.
 
-Run with proxies
+Run with proxies (most likely scrape NA site)
 ```
 NO_PROXY = False
 ```
 
-Run without proxies (not recommended unless you want to scrape products from the EU site)
+Run without proxies (not recommended unless you want to scrape products from the EU or JP site with your own IP or proxy that can access the EU or JP site)
 ```
 NO_PROXY = True
 ```

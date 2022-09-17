@@ -19,12 +19,12 @@ def category_dict(category_items):
     c_id = [int(category_items[item]['id']) for item in range(len(category_items))]
     c_image_url = [category_items[item]['image_url'].replace("//", "") for item in range(len(category_items))]
     c_image_url_hi = [category_items[item]['image_url_hi'].replace("//", "") for item in range(len(category_items))]
-    c_price = [float(f"{category_items[item]['price']/ 100.:.2f}") for item in range(len(category_items))]
-    c_sale_price = [float(f"{category_items[item]['sale_price']/ 100.:.2f}") for item in range(len(category_items))]
+    c_price = [f"{float(category_items[item]['price']/ 100.):.2f}" for item in range(len(category_items))]
+    c_sale_price = [f"{float(category_items[item]['sale_price']/ 100.):.2f}" for item in range(len(category_items))]
     # euros
     if 'price_euro' in category_items[0]:
-        c_price_euro = [float(f"{category_items[item]['price_euro']/ 100.:.2f}") for item in range(len(category_items))]
-        c_sale_price_euro = [float(f"{category_items[item]['sale_price_euro']/ 100.:.2f}") for item in range(len(category_items))]
+        c_price_euro = [f"{float(category_items[item]['price_euro']/ 100.):.2f}" for item in range(len(category_items))]
+        c_sale_price_euro = [f"{float(category_items[item]['sale_price_euro']/ 100.):.2f}" for item in range(len(category_items))]
     c_new_item = [category_items[item]['new_item'] for item in range(len(category_items))]
     c_position = [int(category_items[item]['position']) for item in range(len(category_items))]
     c_category_name = [category_items[item]['category_name'] for item in range(len(category_items))]
@@ -55,7 +55,7 @@ def category_dict(category_items):
 # NO_PROXY = True: Do not use proxy for scraping
 NO_PROXY = False
 
-proxy = {'http': (FreeProxy(country_id='US', rand=True)).get()}
+proxy = {'https': (FreeProxy(country_id=['US', 'CA', 'MX'], rand=True)).get()}
 #print(proxy)
 
 headers = {
@@ -114,7 +114,7 @@ def main():
                 category_df[f"{category_name}_df"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors']})
 
     # Excel file with separate sheets for each category
-    writer = pd.ExcelWriter(f'./data/{title}-Sheets.xlsx', engine='openpyxl')
+    writer = pd.ExcelWriter(f'./data/{title} - Sheets.xlsx', engine='xlsxwriter', engine_kwargs={'options': {'strings_to_numbers': True}})
 
     for category_name, df in category_df.items():
         # remove brackets from colors
@@ -123,13 +123,15 @@ def main():
 
     writer.save() 
 
-    # Excel file with all products on one sheet
     # get all products in each category into one list
     one_list = [v for k,v in category_df.items()] 
     # concatenate all products by row into one dataframe
     one_df = pd.concat(one_list ,axis=0)
 
-    one_df.to_excel(f'./data/{title} - One Sheet.xlsx', engine='openpyxl', sheet_name='Products', index=False)
+    # Excel file with all products on one sheet
+    writer = pd.ExcelWriter(f'./data/{title} - One Sheet.xlsx', engine='xlsxwriter', engine_kwargs={'options': {'strings_to_numbers': True}})
+    one_df.to_excel(writer, sheet_name='Products', index=False)
+    writer.save() 
 
     # CSV file with all products
     one_df.to_csv(f'./data/{title} - CSV.csv', index=False)

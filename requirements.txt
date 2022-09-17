@@ -1,5 +1,5 @@
 pandas==1.4.1
 requests
 lxml==4.9.1
-free-proxy==1.0.5
-openpyxl==3.0.10
+free-proxy==1.0.6
+xlsxwriter==3.0.3

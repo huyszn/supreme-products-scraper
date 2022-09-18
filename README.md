@@ -1,6 +1,6 @@
 # Supreme Products Scraper
 
-Web scraper that scrapes all products and their price, description, colors, sizes, and more from supremenewyork.com (Supreme New York). It then exports the extracted product information into two Excel files: one file with one sheet with all products, a second file with all products separated by categories into multiple sheets, and one CSV file containing all products.
+Web scraper that scrapes all products and their price, description, colors, sizes, stock levels, and more from supremenewyork.com (Supreme New York). It then exports the extracted product information into two Excel files: one file with one sheet with all products, a second file with all products separated by categories into multiple sheets, and one CSV file containing all products.
 
 ## Requirements
 
@@ -16,7 +16,8 @@ $ python3 supreme-scraper.py
 
 ### To change proxy settings, edit the `NO_PROXY` variable's value.
 
-Run with proxies (most likely scrape NA site)
+Run with proxies (most likely scrape NA site) \
+If you get a proxy error, then rerun the script
 ```
 NO_PROXY = False
 ```
@@ -29,7 +30,7 @@ NO_PROXY = True
 
 ## Things to work on
 
-- Add stock level to the Excel/CSV files
+- Add links to products and their colors to the Excel/CSV files
 
 ## License
 

@@ -31,6 +31,7 @@ def category_dict(category_products_list_dict):
     c_description = []
     c_colors = []
     c_sizes = []
+    c_stock_levels = [[]]
     product_colors = []
     product_sizes = []
     # to do: get stock level from the below for loop like with description, color, and size
@@ -49,16 +50,27 @@ def category_dict(category_products_list_dict):
         for i in range(len(product_json['styles'][0]['sizes'])):
             product_sizes.append(product_json['styles'][0]['sizes'][i]['name'])
         c_sizes.append(product_sizes)
+        # get stock levels for all sizes for each color
+        for color in range(len(product_json['styles'])):
+            color_name = product_json['styles'][color]['name']
+            # append stock levels for the color in the empty list created in c_stock_levels
+            for size in range(len(product_json['styles'][color]['sizes'])):
+                c_stock_levels[-1].append(product_json['styles'][color]['sizes'][size]['stock_level'])
+            c_stock_levels[-1].append(f'END OF STOCK FOR {color_name}')
         # clear lists for next product
         product_colors = []
         product_sizes = []
+        # append empty list for stock levels of next product
+        c_stock_levels.append([])
+    # remove the last empty list when iterated through all products in a category
+    c_stock_levels = c_stock_levels[:-1]
 
     # EU
     if 'price_euro' in category_products_list_dict[0]:
-        category_results = {'Name': c_name, 'ID': c_id, 'Image URL': c_image_url, 'Image URL Hi': c_image_url_hi, 'Price': c_price, 'Sale Price': c_sale_price, 'Euro Price': c_price_euro, 'Euro Sale Price': c_sale_price_euro, 'New Item': c_new_item, 'Position': c_position, 'Category Name': c_category_name, 'Description': c_description, 'Colors': c_colors, 'Sizes': c_sizes}
+        category_results = {'Name': c_name, 'ID': c_id, 'Image URL': c_image_url, 'Image URL Hi': c_image_url_hi, 'Price': c_price, 'Sale Price': c_sale_price, 'Euro Price': c_price_euro, 'Euro Sale Price': c_sale_price_euro, 'New Item': c_new_item, 'Position': c_position, 'Category Name': c_category_name, 'Description': c_description, 'Colors': c_colors, 'Sizes': c_sizes, 'Stock Levels': c_stock_levels}
     # NA / JP
     else:
-        category_results = {'Name': c_name, 'ID': c_id, 'Image URL': c_image_url, 'Image URL Hi': c_image_url_hi, 'Price': c_price, 'Sale Price': c_sale_price, 'New Item': c_new_item, 'Position': c_position, 'Category Name': c_category_name, 'Description': c_description, 'Colors': c_colors, 'Sizes': c_sizes}
+        category_results = {'Name': c_name, 'ID': c_id, 'Image URL': c_image_url, 'Image URL Hi': c_image_url_hi, 'Price': c_price, 'Sale Price': c_sale_price, 'New Item': c_new_item, 'Position': c_position, 'Category Name': c_category_name, 'Description': c_description, 'Colors': c_colors, 'Sizes': c_sizes, 'Stock Levels': c_stock_levels}
     
     return category_results
 
@@ -122,18 +134,20 @@ def main():
         if c:
             # EU
             if 'Euro Price' in c:
-                category_dfs[f"{category_name}_df"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'Euro Price': c['Euro Price'], 'Euro Sale Price': c['Euro Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes']})
+                category_dfs[f"{category_name}"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'Euro Price': c['Euro Price'], 'Euro Sale Price': c['Euro Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes'], 'Stock Levels': c['Stock Levels']})
             # NA / JP
             else:
-                category_dfs[f"{category_name}_df"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes']})
+                category_dfs[f"{category_name}"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes'], 'Stock Levels': c['Stock Levels']})
 
     # Excel file with separate sheets for each category
     writer = pd.ExcelWriter(f'./data/{title} - Sheets.xlsx', engine='xlsxwriter', engine_kwargs={'options': {'strings_to_numbers': True}})
 
     for category_name, df in category_dfs.items():
-        # remove brackets from colors and sizes
+        # remove brackets from colors, sizes, and stock levels
         df['Colors'] = df['Colors'].str.join(',')
         df['Sizes'] = df['Sizes'].str.join(',')
+        df['Stock Levels'] = df['Stock Levels'].apply(str).str.replace(r'\[','', regex=True)
+        df['Stock Levels'] = df['Stock Levels'].apply(str).str.replace(r'\]','', regex=True)
         df.to_excel(writer, sheet_name=category_name, index=False)
 
     writer.save() 

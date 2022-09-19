@@ -103,6 +103,23 @@ def category_dict_to_dfs(category_list_dict: List[Dict[str, List[Union[str, int]
         category_name_idx += 1
     return category_dict_dfs
 
+def convert_to_one_df(category_dict_dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """
+    Concatenate all products by row into one dataframe
+
+    Parameters
+    ----------
+    @category_dict_dfs: Dict[str, pd.DataFrame]: Dictionary of products dataframes based on their category
+    Returns
+    -------
+    @df: pd.DataFrame: One dataframe of all products
+    """
+    # get all products in each category into one list
+    dfs_list = [v for k,v in category_dict_dfs.items()] 
+    # concatenate all products by row into one dataframe
+    df = pd.concat(dfs_list ,axis=0)
+    return df
+
 # NO_PROXY = False: Use free proxy for scraping
 # NO_PROXY = True: Do not use free proxy for scraping
 NO_PROXY = False
@@ -169,10 +186,8 @@ def main():
 
     writer.save() 
 
-    # get all products in each category into one list
-    one_products_list = [v for k,v in category_dfs.items()] 
-    # concatenate all products by row into one dataframe
-    one_products_df = pd.concat(one_products_list ,axis=0)
+    # Convert category_dfs into one dataframe of all products
+    one_products_df = convert_to_one_df(category_dfs)
 
     # Excel file with all products on one sheet
     writer = pd.ExcelWriter(f'./data/{title} - One Sheet.xlsx', engine='xlsxwriter', engine_kwargs={'options': {'strings_to_numbers': True}})

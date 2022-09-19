@@ -2,18 +2,19 @@ import requests, json
 from datetime import datetime
 import pandas as pd
 from fp.fp import FreeProxy
+from typing import List, Dict, Union
 
-def category_dict(category_products_list_dict):
+def category_dict(category_products_list_dict: List[Dict[str, int]]) -> Dict[str, List[Union[str, int]]]:
     """
     Parse products in a category to a dictionary
 
     Parameters
     ----------
-    @category_products_list_dict [list]: List of products in a dictionary based on their category
+    @category_products_list_dict: List[Dict[str, int]]: List of products in a dictionary based on their category
 
     Returns
     -------
-    [dictionary] all products and their attributes for a category
+    @category_results: Dict[str, List[Union[str, int]]]: Dictionary of all products and their attributes in a list for a category
     """
     c_name = [category_products_list_dict[item]['name'] for item in range(len(category_products_list_dict))]
     c_id = [int(category_products_list_dict[item]['id']) for item in range(len(category_products_list_dict))]
@@ -74,6 +75,34 @@ def category_dict(category_products_list_dict):
     
     return category_results
 
+def category_dict_to_dfs(category_list_dict: List[Dict[str, List[Union[str, int]]]], name_list: List[str]) -> Dict[str, pd.DataFrame]:
+    """
+    Convert list of category dictionaries to dictionary of multiple dataframes of products based on their category
+
+    Parameters
+    ----------
+    @category_list_dict: List[Dict[str, List[Union[str, int]]]]: Dictionary of all products and their attributes in a list for a category
+    @name_list: List[str]: List of category names in strings
+    Returns
+    -------
+    @category_dict_dfs: Dict[str, pd.DataFrame]: Dictionary of products dataframes based on their category
+    """
+    category_dict_dfs = {}
+    category_name_idx = 0
+    for c in category_list_dict:
+        # get name of the category as string
+        category_name = name_list[category_name_idx]
+        # if the category is not empty (Ex. shoes don't always drop every week)
+        if c:
+            # EU
+            if 'Euro Price' in c:
+                category_dict_dfs[f"{category_name}"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'Euro Price': c['Euro Price'], 'Euro Sale Price': c['Euro Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes'], 'Stock Levels': c['Stock Levels']})
+            # NA / JP
+            else:
+                category_dict_dfs[f"{category_name}"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes'], 'Stock Levels': c['Stock Levels']})
+        category_name_idx += 1
+    return category_dict_dfs
+
 # NO_PROXY = False: Use free proxy for scraping
 # NO_PROXY = True: Do not use free proxy for scraping
 NO_PROXY = False
@@ -122,22 +151,10 @@ def main():
     Shoes = category_dict(categories['Shoes']) if 'Shoes' in categories else []
 
     category_list = [Bags, Skate, Shirts, Pants, Shorts, Tops_Sweaters, T_Shirts, Jackets, Sweatshirts, Hats, Accessories, Shoes]
+    category_str_name_list = ['Bags', 'Skate', 'Shirts', 'Pants', 'Shorts', 'Tops_Sweaters', 'T-Shirts', 'Jackets', 'Sweatshirts', 'Hats', 'Accessories', 'Shoes']
 
-    # convert list of category dictionaries to dictionary of multiple dataframes of products based on their category
-    category_dfs = {}
-    for c in category_list:
-        # get names of variables from category_list as strings
-        c_list = [key for key, value in locals().items() if value == c]
-        category_name = c_list[0]
-
-        # if the category is not empty (Ex. shoes don't always drop every week)
-        if c:
-            # EU
-            if 'Euro Price' in c:
-                category_dfs[f"{category_name}"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'Euro Price': c['Euro Price'], 'Euro Sale Price': c['Euro Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes'], 'Stock Levels': c['Stock Levels']})
-            # NA / JP
-            else:
-                category_dfs[f"{category_name}"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes'], 'Stock Levels': c['Stock Levels']})
+    # make dictionaries in category_list into a dictionary of dataframes
+    category_dfs = category_dict_to_dfs(category_list, category_str_name_list)
 
     # Excel file with separate sheets for each category
     writer = pd.ExcelWriter(f'./data/{title} - Sheets.xlsx', engine='xlsxwriter', engine_kwargs={'options': {'strings_to_numbers': True}})

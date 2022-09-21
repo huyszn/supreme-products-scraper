@@ -10,23 +10,26 @@ $ pip install -r requirements.txt
 
 ## Usage
 
+### Run with a proxy
+This will most likely scrape the NA site.
+```
+$ python3 supreme-scraper.py -p
+```
+or
+```
+$ python3 supreme-scraper.py --proxy
+```
+If you get a proxy error, then rerun the script or try to run the script without a proxy.
+
+
+### Run without a proxy
+This is not recommended unless you:
+- Want to scrape products from the EU or JP site with your own IP
+- Have a proxy that can access the EU or JP site
+- Found that none of the free proxies are working
 ```
 $ python3 supreme-scraper.py
 ```
-
-### To change proxy settings, edit the `NO_PROXY` variable's value.
-
-Run with proxies (most likely scrape NA site) \
-If you get a proxy error, then rerun the script
-```
-NO_PROXY = False
-```
-
-Run without proxies (not recommended unless you want to scrape products from the EU or JP site with your own IP or proxy that can access the EU or JP site)
-```
-NO_PROXY = True
-```
-
 
 ## Things to work on
 

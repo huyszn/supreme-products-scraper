@@ -1,4 +1,4 @@
-import requests, json
+import requests, json, argparse
 from datetime import datetime
 import pandas as pd
 from fp.fp import FreeProxy
@@ -37,10 +37,10 @@ def category_dict(category_products_list_dict: List[Dict[str, int]]) -> Dict[str
     product_sizes = []
     # to do: get stock level from the below for loop like with description, color, and size
     for item in c_id:
-        if NO_PROXY:
-            product_json = requests.get(f"https://www.supremenewyork.com/shop/{item}.json", headers=headers).json()
+        if PROXY:
+            product_json = requests.get(f"https://www.supremenewyork.com/shop/{item}.json", headers=headers, proxies=free_proxy).json()
         else:
-            product_json = requests.get(f"https://www.supremenewyork.com/shop/{item}.json", headers=headers, proxies=proxy).json()
+            product_json = requests.get(f"https://www.supremenewyork.com/shop/{item}.json", headers=headers).json()
         # get description for one product
         c_description.append(product_json['description'])
         # get all colors for one product
@@ -120,11 +120,21 @@ def convert_to_one_df(category_dict_dfs: Dict[str, pd.DataFrame]) -> pd.DataFram
     df = pd.concat(dfs_list ,axis=0)
     return df
 
-# NO_PROXY = False: Use free proxy for scraping
-# NO_PROXY = True: Do not use free proxy for scraping
-NO_PROXY = False
+# Parse arguments
+parser = argparse.ArgumentParser(description='Scrapes all supremenewyork.com products information')
+parser.add_argument('--proxy', '-p', action='store_true', help='Use free proxies to scrape supremenewyork.com', required=False)
+args = parser.parse_args()
 
-proxy = {'https': (FreeProxy(country_id=['US', 'CA', 'MX'], rand=True)).get()}
+# PROXY = True: Use free proxy for scraping
+# PROXY = False: Do not use free proxy for scraping
+PROXY = args.proxy
+
+if PROXY:
+    print('Using free proxy.')
+else:
+    print('Not using free proxy.')
+
+free_proxy = {'https': (FreeProxy(country_id=['US', 'CA', 'MX'], rand=True)).get()}
 #print(proxy)
 
 headers = {
@@ -133,10 +143,10 @@ headers = {
 
 def main():
     #### REQUEST JSON FROM URL
-    if NO_PROXY:
-        r = requests.get("https://www.supremenewyork.com/mobile_stock.json", headers=headers)
+    if PROXY:
+        r = requests.get("https://www.supremenewyork.com/mobile_stock.json", headers=headers, proxies=free_proxy)
     else:
-        r = requests.get("https://www.supremenewyork.com/mobile_stock.json", headers=headers, proxies=proxy)
+        r = requests.get("https://www.supremenewyork.com/mobile_stock.json", headers=headers)
     json_r = r.json()
     with open('./stock/mobile_stock.json', 'w') as f:
         json.dump(json_r, f)

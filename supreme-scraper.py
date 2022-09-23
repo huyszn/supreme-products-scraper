@@ -18,8 +18,9 @@ def category_dict(category_products_list_dict: List[Dict[str, int]]) -> Dict[str
     """
     c_name = [category_products_list_dict[item]['name'] for item in range(len(category_products_list_dict))]
     c_id = [int(category_products_list_dict[item]['id']) for item in range(len(category_products_list_dict))]
-    c_image_url = [category_products_list_dict[item]['image_url'].replace("//", "") for item in range(len(category_products_list_dict))]
-    c_image_url_hi = [category_products_list_dict[item]['image_url_hi'].replace("//", "") for item in range(len(category_products_list_dict))]
+    c_mobile_url = [f'https://www.supremenewyork.com/mobile/#products/{id}' for id in c_id]
+    c_image_url = [category_products_list_dict[item]['image_url'].replace("//", "https://") for item in range(len(category_products_list_dict))]
+    c_image_url_hi = [category_products_list_dict[item]['image_url_hi'].replace("//", "https://") for item in range(len(category_products_list_dict))]
     c_price = [f"{float(category_products_list_dict[item]['price']/ 100.):.2f}" for item in range(len(category_products_list_dict))]
     c_sale_price = [f"{float(category_products_list_dict[item]['sale_price']/ 100.):.2f}" for item in range(len(category_products_list_dict))]
     # euros
@@ -31,10 +32,12 @@ def category_dict(category_products_list_dict: List[Dict[str, int]]) -> Dict[str
     c_category_name = [category_products_list_dict[item]['category_name'] for item in range(len(category_products_list_dict))]
     c_description = []
     c_colors = []
+    c_mobile_url_colors = []
     c_sizes = []
     c_stock_levels = [[]]
     product_colors = []
     product_sizes = []
+    product_mobile_url_colors = []
     # to do: get stock level from the below for loop like with description, color, and size
     for item in c_id:
         if PROXY:
@@ -43,23 +46,27 @@ def category_dict(category_products_list_dict: List[Dict[str, int]]) -> Dict[str
             product_json = requests.get(f"https://www.supremenewyork.com/shop/{item}.json", headers=headers).json()
         # get description for one product
         c_description.append(product_json['description'])
-        # get all colors for one product
-        for i in range(len(product_json['styles'])):
-            product_colors.append(product_json['styles'][i]['name'])
-        c_colors.append(product_colors)
         # get all sizes for one product
         for i in range(len(product_json['styles'][0]['sizes'])):
             product_sizes.append(product_json['styles'][0]['sizes'][i]['name'])
         c_sizes.append(product_sizes)
-        # get stock levels for all sizes for each color
+        # get all colors, mobile URLs for each color, and stock levels for all sizes for each color for one product
         for color in range(len(product_json['styles'])):
+            # colors
+            product_colors.append(product_json['styles'][color]['name'])
+            # mobile URLs for each color
+            product_mobile_url_colors.append(f"https://www.supremenewyork.com/mobile/#products/{item}/{product_json['styles'][color]['id']}")
+            # stock levels for all sizes for each color
             color_name = product_json['styles'][color]['name']
             # append stock levels for the color in the empty list created in c_stock_levels
             for size in range(len(product_json['styles'][color]['sizes'])):
                 c_stock_levels[-1].append(product_json['styles'][color]['sizes'][size]['stock_level'])
             c_stock_levels[-1].append(f'END OF STOCK FOR {color_name}')
+        c_colors.append(product_colors)
+        c_mobile_url_colors.append(product_mobile_url_colors)
         # clear lists for next product
         product_colors = []
+        product_mobile_url_colors = []
         product_sizes = []
         # append empty list for stock levels of next product
         c_stock_levels.append([])
@@ -68,10 +75,10 @@ def category_dict(category_products_list_dict: List[Dict[str, int]]) -> Dict[str
 
     # EU
     if 'price_euro' in category_products_list_dict[0]:
-        category_results = {'Name': c_name, 'ID': c_id, 'Image URL': c_image_url, 'Image URL Hi': c_image_url_hi, 'Price': c_price, 'Sale Price': c_sale_price, 'Euro Price': c_price_euro, 'Euro Sale Price': c_sale_price_euro, 'New Item': c_new_item, 'Position': c_position, 'Category Name': c_category_name, 'Description': c_description, 'Colors': c_colors, 'Sizes': c_sizes, 'Stock Levels': c_stock_levels}
+        category_results = {'Name': c_name, 'ID': c_id, 'Mobile URL': c_mobile_url, 'Image URL': c_image_url, 'Image URL Hi': c_image_url_hi, 'Price': c_price, 'Sale Price': c_sale_price, 'Euro Price': c_price_euro, 'Euro Sale Price': c_sale_price_euro, 'New Item': c_new_item, 'Position': c_position, 'Category Name': c_category_name, 'Description': c_description, 'Colors': c_colors, 'Mobile URL Colors': c_mobile_url_colors, 'Sizes': c_sizes, 'Stock Levels': c_stock_levels}
     # NA / JP
     else:
-        category_results = {'Name': c_name, 'ID': c_id, 'Image URL': c_image_url, 'Image URL Hi': c_image_url_hi, 'Price': c_price, 'Sale Price': c_sale_price, 'New Item': c_new_item, 'Position': c_position, 'Category Name': c_category_name, 'Description': c_description, 'Colors': c_colors, 'Sizes': c_sizes, 'Stock Levels': c_stock_levels}
+        category_results = {'Name': c_name, 'ID': c_id, 'Mobile URL': c_mobile_url, 'Image URL': c_image_url, 'Image URL Hi': c_image_url_hi, 'Price': c_price, 'Sale Price': c_sale_price, 'New Item': c_new_item, 'Position': c_position, 'Category Name': c_category_name, 'Description': c_description, 'Colors': c_colors, 'Mobile URL Colors': c_mobile_url_colors, 'Sizes': c_sizes, 'Stock Levels': c_stock_levels}
     
     return category_results
 
@@ -96,10 +103,10 @@ def category_dict_to_dfs(category_list_dict: List[Dict[str, List[Union[str, int]
         if c:
             # EU
             if 'Euro Price' in c:
-                category_dict_dfs[f"{category_name}"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'Euro Price': c['Euro Price'], 'Euro Sale Price': c['Euro Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes'], 'Stock Levels': c['Stock Levels']})
+                category_dict_dfs[f"{category_name}"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Mobile URL': c['Mobile URL'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'Euro Price': c['Euro Price'], 'Euro Sale Price': c['Euro Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Mobile URL Colors': c['Mobile URL Colors'], 'Sizes': c['Sizes'], 'Stock Levels': c['Stock Levels']})
             # NA / JP
             else:
-                category_dict_dfs[f"{category_name}"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Sizes': c['Sizes'], 'Stock Levels': c['Stock Levels']})
+                category_dict_dfs[f"{category_name}"] = pd.DataFrame({'Name': c['Name'], 'ID': c['ID'], 'Mobile URL': c['Mobile URL'], 'Image URL': c['Image URL'], 'Image URL Hi': c['Image URL Hi'], 'Price': c['Price'], 'Sale Price': c['Sale Price'], 'New Item': c['New Item'], 'Position': c['Position'], 'Category Name': c['Category Name'], 'Description': c['Description'], 'Colors': c['Colors'], 'Mobile URL Colors': c['Mobile URL Colors'], 'Sizes': c['Sizes'], 'Stock Levels': c['Stock Levels']})
         category_name_idx += 1
     return category_dict_dfs
 
@@ -192,6 +199,8 @@ def main():
         df['Sizes'] = df['Sizes'].str.join(',')
         df['Stock Levels'] = df['Stock Levels'].apply(str).str.replace(r'\[','', regex=True)
         df['Stock Levels'] = df['Stock Levels'].apply(str).str.replace(r'\]','', regex=True)
+        df['Mobile URL Colors'] = df['Mobile URL Colors'].apply(str).str.replace(r'\[','', regex=True)
+        df['Mobile URL Colors'] = df['Mobile URL Colors'].apply(str).str.replace(r'\]','', regex=True)
         df.to_excel(writer, sheet_name=category_name, index=False)
 
     writer.save() 
@@ -206,6 +215,8 @@ def main():
 
     # CSV file with all products
     one_products_df.to_csv(f'./data/{title} - CSV.csv', index=False)
+
+    print('Finished exporting data to Excel and CSV files.')
 
 if __name__ == '__main__':
     main()

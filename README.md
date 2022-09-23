@@ -33,7 +33,7 @@ $ python3 supreme-scraper.py
 
 ## Things to work on
 
-- Add links to products and their colors to the Excel/CSV files
+- Add desktop links to products and their colors to the Excel/CSV files
 
 ## License
 

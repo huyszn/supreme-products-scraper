@@ -138,11 +138,9 @@ PROXY = args.proxy
 
 if PROXY:
     print('Using free proxy.')
+    free_proxy = {'https': (FreeProxy(country_id=['US', 'CA', 'MX'], rand=True)).get()}
 else:
     print('Not using free proxy.')
-
-free_proxy = {'https': (FreeProxy(country_id=['US', 'CA', 'MX'], rand=True)).get()}
-#print(proxy)
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1'
@@ -171,18 +169,23 @@ def main():
 
     categories = json_r['products_and_categories']
     # parse all products in a category to a dictionary
-    Bags = category_dict(categories['Bags']) if 'Bags' in categories else []
-    Skate = category_dict(categories['Skate']) if 'Skate' in categories else []
-    Shirts = category_dict(categories['Shirts']) if 'Shirts' in categories else []
-    Pants = category_dict(categories['Pants']) if 'Pants' in categories else []
-    Shorts = category_dict(categories['Shorts']) if 'Shorts' in categories else []
-    Tops_Sweaters = category_dict(categories['Tops/Sweaters']) if 'Tops/Sweaters' in categories else []
-    T_Shirts = category_dict(categories['T-Shirts']) if 'T-Shirts' in categories else []
-    Jackets = category_dict(categories['Jackets']) if 'Jackets' in categories else []
-    Sweatshirts = category_dict(categories['Sweatshirts']) if 'Sweatshirts' in categories else []
-    Hats = category_dict(categories['Hats']) if 'Hats' in categories else []
-    Accessories = category_dict(categories['Accessories']) if 'Accessories' in categories else []
-    Shoes = category_dict(categories['Shoes']) if 'Shoes' in categories else []
+    try:
+        Bags = category_dict(categories['Bags']) if 'Bags' in categories else []
+        Skate = category_dict(categories['Skate']) if 'Skate' in categories else []
+        Shirts = category_dict(categories['Shirts']) if 'Shirts' in categories else []
+        Pants = category_dict(categories['Pants']) if 'Pants' in categories else []
+        Shorts = category_dict(categories['Shorts']) if 'Shorts' in categories else []
+        Tops_Sweaters = category_dict(categories['Tops/Sweaters']) if 'Tops/Sweaters' in categories else []
+        T_Shirts = category_dict(categories['T-Shirts']) if 'T-Shirts' in categories else []
+        Jackets = category_dict(categories['Jackets']) if 'Jackets' in categories else []
+        Sweatshirts = category_dict(categories['Sweatshirts']) if 'Sweatshirts' in categories else []
+        Hats = category_dict(categories['Hats']) if 'Hats' in categories else []
+        Accessories = category_dict(categories['Accessories']) if 'Accessories' in categories else []
+        Shoes = category_dict(categories['Shoes']) if 'Shoes' in categories else []
+    # exit scraper if your IP/proxy is banned from supremenewyork.com
+    except (json.decoder.JSONDecodeError, requests.exceptions.JSONDecodeError):
+        print('You are banned from supremenewyork.com. Try using a different IP or another proxy.')
+        return
 
     category_list = [Bags, Skate, Shirts, Pants, Shorts, Tops_Sweaters, T_Shirts, Jackets, Sweatshirts, Hats, Accessories, Shoes]
     category_str_name_list = ['Bags', 'Skate', 'Shirts', 'Pants', 'Shorts', 'Tops_Sweaters', 'T-Shirts', 'Jackets', 'Sweatshirts', 'Hats', 'Accessories', 'Shoes']

@@ -17,32 +17,35 @@ Web scraper that scrapes all products and their price, description, colors, size
 
 ## Requirements
 
+Clone this repository, cd into it, and install dependencies:
+```sh
+git clone https://github.com/huyszn/supreme-products-scraper.git
+cd supreme-products-scraper
+pip install -r requirements.txt
 ```
-$ pip install -r requirements.txt
-```
-
 ## Usage
 
 ### Run with a proxy
 This will most likely scrape the NA site.
-```
-$ python3 supreme-scraper.py -p
+```sh
+python3 supreme-scraper.py -p
 ```
 or
-```
-$ python3 supreme-scraper.py --proxy
+```sh
+python3 supreme-scraper.py --proxy
 ```
 If you get a proxy error, then rerun the script or try to run the script without a proxy.
 
-
 ### Run without a proxy
-This is not recommended unless you:
+This is not recommended unless you either:
 - Want to scrape products from the EU or JP site with your own IP
 - Have a proxy that can access the EU or JP site
 - Found that none of the free proxies are working
 ```
-$ python3 supreme-scraper.py
+python3 supreme-scraper.py
 ```
+If you get a message saying you are banned, then rerun the script on a different IP or use a different proxy.
+
 
 ## Things to work on
 

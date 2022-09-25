@@ -1,6 +1,6 @@
 # Supreme Products Scraper
 
-Web scraper that scrapes all products and their price, description, colors, sizes, stock levels, and more from supremenewyork.com (Supreme New York). It then exports the extracted product information into two Excel files: one file with one sheet with all products, a second file with all products separated by categories into multiple sheets, and one CSV file containing all products. The scraper works for the North America and Europe store.
+Web scraper that scrapes all products and their price, description, colors, sizes, stock levels, and more from supremenewyork.com (Supreme New York). It then exports the extracted product information into two Excel files: one file with one sheet with all products, a second file with all products separated by categories into multiple sheets, and one CSV file containing all products. The scraper works for the North America, Europe, and Japan store.
 
 <b>[Here](sample%20data/Sample%20NA%20Supreme%20Products%20for%20the%20Week%20of%20September%2022%202022%20(Week%205%20of%20FW22)%20-%20CSV.csv) is an example of the CSV file outputted by the scraper.</b>
 

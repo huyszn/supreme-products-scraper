@@ -3,3 +3,4 @@ requests
 lxml==4.9.1
 free-proxy==1.0.6
 xlsxwriter==3.0.3
+rich==12.5.1

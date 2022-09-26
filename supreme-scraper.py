@@ -1,8 +1,9 @@
-import requests, json, argparse
+import requests, json, argparse, sys
 from datetime import datetime
 import pandas as pd
 from fp.fp import FreeProxy
 from typing import List, Dict, Union
+from rich.console import Console
 
 def category_dict(category_products_list_dict: List[Dict[str, int]]) -> Dict[str, List[Union[str, int]]]:
     """
@@ -38,10 +39,14 @@ def category_dict(category_products_list_dict: List[Dict[str, int]]) -> Dict[str
     product_colors = []
     product_sizes = []
     product_mobile_url_colors = []
-    # to do: get stock level from the below for loop like with description, color, and size
     for item in c_id:
         if PROXY:
-            product_json = requests.get(f"https://www.supremenewyork.com/shop/{item}.json", headers=headers, proxies=free_proxy).json()
+            try:
+                product_json = requests.get(f"https://www.supremenewyork.com/shop/{item}.json", headers=headers, proxies=free_proxy).json()
+            # exit scraper if a proxy error happens while scraping
+            except (requests.exceptions.ProxyError, requests.exceptions.SSLError):
+                console.print('Error connecting to the proxy.', style='bold red underline')
+                sys.exit(1)
         else:
             product_json = requests.get(f"https://www.supremenewyork.com/shop/{item}.json", headers=headers).json()
         # get description for one product
@@ -132,15 +137,19 @@ parser = argparse.ArgumentParser(description='Scrapes all supremenewyork.com pro
 parser.add_argument('--proxy', '-p', action='store_true', help='Use free proxies to scrape supremenewyork.com', required=False)
 args = parser.parse_args()
 
+# Console from rich
+console = Console()
+
 # PROXY = True: Use free proxy for scraping
 # PROXY = False: Do not use free proxy for scraping
 PROXY = args.proxy
 
 if PROXY:
-    print('Using free proxy.')
+    console.print('Using free proxy.', style='bold yellow')
     free_proxy = {'https': (FreeProxy(country_id=['US', 'CA', 'MX'], rand=True)).get()}
+    console.print(free_proxy['https'], highlight=False, style='yellow2')
 else:
-    print('Not using free proxy.')
+    console.print('Not using free proxy.', style='bold yellow')
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1'
@@ -149,7 +158,11 @@ headers = {
 def main():
     #### REQUEST JSON FROM URL
     if PROXY:
-        r = requests.get("https://www.supremenewyork.com/mobile_stock.json", headers=headers, proxies=free_proxy)
+        try:
+            r = requests.get("https://www.supremenewyork.com/mobile_stock.json", headers=headers, proxies=free_proxy)
+        except (requests.exceptions.ProxyError, requests.exceptions.SSLError):
+            console.print('Error connecting to the proxy.', style='bold red underline')
+            return
     else:
         r = requests.get("https://www.supremenewyork.com/mobile_stock.json", headers=headers)
     json_r = r.json()
@@ -171,20 +184,32 @@ def main():
     # parse all products in a category to a dictionary
     try:
         Bags = category_dict(categories['Bags']) if 'Bags' in categories else []
+        console.print('Finished retrieving all product information under [rgb(0,255,255)]Bags[/].')
         Skate = category_dict(categories['Skate']) if 'Skate' in categories else []
+        console.print('Finished retrieving all product information under [rgb(0,255,235)]Skate[/].')
         Shirts = category_dict(categories['Shirts']) if 'Shirts' in categories else []
+        console.print('Finished retrieving all product information under [rgb(0,255,215)]Shirts[/].')
         Pants = category_dict(categories['Pants']) if 'Pants' in categories else []
+        console.print('Finished retrieving all product information under [rgb(0,255,195)]Pants[/].')
         Shorts = category_dict(categories['Shorts']) if 'Shorts' in categories else []
+        console.print('Finished retrieving all product information under [rgb(0,255,175)]Shorts[/].')
         Tops_Sweaters = category_dict(categories['Tops/Sweaters']) if 'Tops/Sweaters' in categories else []
+        console.print('Finished retrieving all product information under [rgb(0,255,155)]Tops/Sweaters[/].')
         T_Shirts = category_dict(categories['T-Shirts']) if 'T-Shirts' in categories else []
+        console.print('Finished retrieving all product information under [rgb(0,255,135)]T-Shirts[/].')
         Jackets = category_dict(categories['Jackets']) if 'Jackets' in categories else []
+        console.print('Finished retrieving all product information under [rgb(0,255,115)]Jackets[/].')
         Sweatshirts = category_dict(categories['Sweatshirts']) if 'Sweatshirts' in categories else []
+        console.print('Finished retrieving all product information under [rgb(0,255,95)]Sweatshirts[/].')
         Hats = category_dict(categories['Hats']) if 'Hats' in categories else []
+        console.print('Finished retrieving all product information under [rgb(0,255,75)]Hats[/].')
         Accessories = category_dict(categories['Accessories']) if 'Accessories' in categories else []
+        console.print('Finished retrieving all product information under [rgb(0,255,55)]Accessories[/].')
         Shoes = category_dict(categories['Shoes']) if 'Shoes' in categories else []
+        console.print('Finished retrieving all product information under [rgb(0,255,0)]Shoes[/].')
     # exit scraper if your IP/proxy is banned from supremenewyork.com
     except (json.decoder.JSONDecodeError, requests.exceptions.JSONDecodeError):
-        print('You are banned from supremenewyork.com. Try using a different IP or another proxy.')
+        console.print('You are banned from supremenewyork.com. Try another proxy by rerunning the scraper, run the scraper without the -p argument, or use a different IP.', style='bold white on red')
         return
 
     category_list = [Bags, Skate, Shirts, Pants, Shorts, Tops_Sweaters, T_Shirts, Jackets, Sweatshirts, Hats, Accessories, Shoes]
@@ -219,7 +244,7 @@ def main():
     # CSV file with all products
     one_products_df.to_csv(f'./data/{title} - CSV.csv', index=False)
 
-    print('Finished exporting data to Excel and CSV files.')
+    console.print('Finished exporting data to Excel and CSV files.', style='bold green')
 
 if __name__ == '__main__':
     main()

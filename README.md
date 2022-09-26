@@ -34,7 +34,28 @@ or
 ```sh
 python3 supreme-scraper.py --proxy
 ```
+
+![Proxy Success](images/Proxy%20-%20Success.png)
+<p align="center">
+  <b>Scraped Supreme products with a proxy</b>
+</p>
+
 If you get a proxy error, then rerun the script or try to run the script without a proxy.
+
+![Proxy Banned](images/Proxy%20-%20Banned.png)
+<p align="center">
+  <b>Proxy is banned from Supreme</b>
+</p>
+
+![Proxy Error Connecting](images/Proxy%20-%20Error%20Connecting.png)
+<p align="center">
+  <b>Error connecting to the proxy</b>
+</p>
+
+![Proxy Error Connecting while scraping](images/Proxy%20-%20Error%20Connecting%20Scraping.png)
+<p align="center">
+  <b>Error connecting to the proxy while scraping products</b>
+</p>
 
 ### Run without a proxy
 This is not recommended unless you either:
@@ -44,8 +65,18 @@ This is not recommended unless you either:
 ```
 python3 supreme-scraper.py
 ```
-If you get a message saying you are banned, then rerun the script on a different IP or use a different proxy.
 
+![No Proxy Success](images/No%20Proxy%20-%20Success.png)
+<p align="center">
+  <b>Scraped Supreme products without a proxy</b>
+</p>
+
+If you get a message saying you are banned, then rerun the script on a different IP or run the script with the `-p` or `--proxy` argument.
+
+![No Proxy Success](images/No%20Proxy%20-%20Banned.png)
+<p align="center">
+  <b>Your IP is banned from Supreme</b>
+</p>
 
 ## Things to work on
 
